@@ -2,11 +2,12 @@
   "compilerOptions": {
     "baseUrl": "./src",
     "paths": {
-      "@components/*": ["./components/*"],
+      "@components/*": ["components/*"],
       "@assets/*": ["assets/*"],
       "@constants/*": ["constants/*"],
       "@feature/*": ["feature/*"],
-      "@lib/*": ["lib/*"]
+      "@lib/*": ["lib/*"],
+      "@containers/*": ["containers/*"]
     },
     "target": "ESNext",
     "useDefineForClassFields": true,

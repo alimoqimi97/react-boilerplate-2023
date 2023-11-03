@@ -1,9 +1,58 @@
-import { FC } from "react";
-import { Keyboard } from "@components/WordleContainer/KeyBoard";
-import { solution, unicodeLength } from "@lib/words";
+import { FC, useState } from "react";
+import { Keyboard } from "../components/WordleContainer/KeyBoard";
+
+import {
+  findFirstUnusedReveal,
+  getIsLatestGame,
+  isWinningWord,
+  isWordInWordList,
+  solution,
+  unicodeLength,
+} from "../lib/words";
+import { loadGameStateFromLocalStorage } from "../lib/localStorage";
+import { MAX_CHALLENGES, REVEAL_TIME_MS } from "../constants/settings";
+import {
+  CORRECT_WORD_MESSAGE,
+  NOT_ENOUGH_LETTERS_MESSAGE,
+  WORD_NOT_FOUND_MESSAGE,
+} from "../constants/strings";
+import ToastNotify from "../components/ToastNotify";
+import GraphemeSplitter from "grapheme-splitter";
+import { addStatsForCompletedGame, loadStats } from "../lib/stats";
+import WordsTable from "../components/WordleContainer/WordsTable";
 import styles from "./styles.module.scss";
 
 const useKeyBoard = () => {
+  const isLatestGame = getIsLatestGame();
+  const [currentGuess, setCurrentGuess] = useState("");
+  const [isGameLost, setIsGameLost] = useState(false);
+  const [isGameWon, setIsGameWon] = useState(false);
+  const [currentRowClass, setCurrentRowClass] = useState("");
+  const [guesses, setGuesses] = useState<string[]>(() => {
+    const loaded = loadGameStateFromLocalStorage(isLatestGame);
+    if (loaded?.solution !== solution) {
+      return [];
+    }
+    const gameWasWon = loaded.guesses.includes(solution);
+    if (gameWasWon) {
+      setIsGameWon(true);
+    }
+    if (loaded.guesses.length === MAX_CHALLENGES && !gameWasWon) {
+      setIsGameLost(true);
+      ToastNotify(CORRECT_WORD_MESSAGE(solution));
+    }
+    return loaded.guesses;
+  });
+  const [stats, setStats] = useState(() => loadStats());
+
+  const [isHardMode, setIsHardMode] = useState(
+    localStorage.getItem("gameMode")
+      ? localStorage.getItem("gameMode") === "hard"
+      : false
+  );
+
+  const [isRevealing, setIsRevealing] = useState(false);
+
   const onChar = (value: string) => {
     if (
       unicodeLength(`${currentGuess}${value}`) <= solution.length &&
@@ -27,16 +76,12 @@ const useKeyBoard = () => {
 
     if (!(unicodeLength(currentGuess) === solution.length)) {
       setCurrentRowClass("jiggle");
-      return showErrorAlert(NOT_ENOUGH_LETTERS_MESSAGE, {
-        onClose: clearCurrentRowClass,
-      });
+      return ToastNotify(NOT_ENOUGH_LETTERS_MESSAGE);
     }
 
     if (!isWordInWordList(currentGuess)) {
       setCurrentRowClass("jiggle");
-      return showErrorAlert(WORD_NOT_FOUND_MESSAGE, {
-        onClose: clearCurrentRowClass,
-      });
+      return ToastNotify(WORD_NOT_FOUND_MESSAGE);
     }
 
     // enforce hard mode - all guesses must contain all previously revealed letters
@@ -44,9 +89,7 @@ const useKeyBoard = () => {
       const firstMissingReveal = findFirstUnusedReveal(currentGuess, guesses);
       if (firstMissingReveal) {
         setCurrentRowClass("jiggle");
-        return showErrorAlert(firstMissingReveal, {
-          onClose: clearCurrentRowClass,
-        });
+        return ToastNotify(firstMissingReveal);
       }
     }
 
@@ -79,22 +122,42 @@ const useKeyBoard = () => {
           setStats(addStatsForCompletedGame(stats, guesses.length + 1));
         }
         setIsGameLost(true);
-        showErrorAlert(CORRECT_WORD_MESSAGE(solution), {
-          persist: true,
-          delayMs: REVEAL_TIME_MS * solution.length + 1,
-        });
+        ToastNotify(CORRECT_WORD_MESSAGE(solution));
       }
     }
   };
 
-  return { onChar, onDelete, onEnter };
+  return {
+    onChar,
+    onDelete,
+    onEnter,
+    isRevealing,
+    guesses,
+    currentGuess,
+    currentRowClass,
+  };
 };
 
 const WordleContainer: FC = () => {
-  const { onChar, onDelete, onEnter } = useKeyBoard();
+  const {
+    onChar,
+    onDelete,
+    onEnter,
+    guesses,
+    isRevealing,
+    currentGuess,
+    currentRowClass,
+  } = useKeyBoard();
 
   return (
     <section className={styles["wordle-container"]}>
+      <WordsTable
+        solution={solution}
+        guesses={guesses}
+        currentGuess={currentGuess}
+        isRevealing={isRevealing}
+        currentRowClass={currentRowClass}
+      />
       <Keyboard
         onChar={onChar}
         onDelete={onDelete}

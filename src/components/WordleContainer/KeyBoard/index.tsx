@@ -1,17 +1,17 @@
-import { useEffect } from 'react'
-import { Key } from '../Key'
-import { DELETE_TEXT, ENTER_TEXT } from '@constants/settings'
-import { getStatuses } from '@lib/statuses'
-import { localeAwareUpperCase } from '@lib/words'
+import { useEffect } from "react";
+import { Key } from "../Key";
+import { ENTER_TEXT, DELETE_TEXT } from "../../../constants/strings";
+import { getStatuses } from "../../../lib/statuses";
+import { localeAwareUpperCase } from "../../../lib/words";
 
 type Props = {
-  onChar: (value: string) => void
-  onDelete: () => void
-  onEnter: () => void
-  solution: string
-  guesses: string[]
-  isRevealing?: boolean
-}
+  onChar: (value: string) => void;
+  onDelete: () => void;
+  onEnter: () => void;
+  solution: string;
+  guesses: string[];
+  isRevealing?: boolean;
+};
 
 export const Keyboard = ({
   onChar,
@@ -21,42 +21,42 @@ export const Keyboard = ({
   guesses,
   isRevealing,
 }: Props) => {
-  const charStatuses = getStatuses(solution, guesses)
+  const charStatuses = getStatuses(solution, guesses);
 
   const onClick = (value: string) => {
-    if (value === 'ENTER') {
-      onEnter()
-    } else if (value === 'DELETE') {
-      onDelete()
+    if (value === "ENTER") {
+      onEnter();
+    } else if (value === "DELETE") {
+      onDelete();
     } else {
-      onChar(value)
+      onChar(value);
     }
-  }
+  };
 
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
-      if (e.code === 'Enter') {
-        onEnter()
-      } else if (e.code === 'Backspace') {
-        onDelete()
+      if (e.code === "Enter") {
+        onEnter();
+      } else if (e.code === "Backspace") {
+        onDelete();
       } else {
-        const key = localeAwareUpperCase(e.key)
+        const key = localeAwareUpperCase(e.key);
         // TODO: check this test if the range works with non-english letters
-        if (key.length === 1 && key >= 'A' && key <= 'Z') {
-          onChar(key)
+        if (key.length === 1 && key >= "A" && key <= "Z") {
+          onChar(key);
         }
       }
-    }
-    window.addEventListener('keyup', listener)
+    };
+    window.addEventListener("keyup", listener);
     return () => {
-      window.removeEventListener('keyup', listener)
-    }
-  }, [onEnter, onDelete, onChar])
+      window.removeEventListener("keyup", listener);
+    };
+  }, [onEnter, onDelete, onChar]);
 
   return (
     <div>
       <div className="mb-1 flex justify-center">
-        {['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'].map((key) => (
+        {["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"].map((key) => (
           <Key
             value={key}
             key={key}
@@ -67,7 +67,7 @@ export const Keyboard = ({
         ))}
       </div>
       <div className="mb-1 flex justify-center">
-        {['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'].map((key) => (
+        {["A", "S", "D", "F", "G", "H", "J", "K", "L"].map((key) => (
           <Key
             value={key}
             key={key}
@@ -81,7 +81,7 @@ export const Keyboard = ({
         <Key width={65.4} value="ENTER" onClick={onClick}>
           {ENTER_TEXT}
         </Key>
-        {['Z', 'X', 'C', 'V', 'B', 'N', 'M'].map((key) => (
+        {["Z", "X", "C", "V", "B", "N", "M"].map((key) => (
           <Key
             value={key}
             key={key}
@@ -95,5 +95,5 @@ export const Keyboard = ({
         </Key>
       </div>
     </div>
-  )
-}
+  );
+};

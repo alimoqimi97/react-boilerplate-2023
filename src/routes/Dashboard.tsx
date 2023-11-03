@@ -7,6 +7,8 @@ import {
   incrementByAmount,
 } from "../features/counter/counterSlice";
 import { useState } from "react";
+import WordleContainer from "../containers/wordle-container";
+
 
 const child = <Skeleton width={40} height={40} radius="md" animate={false} />;
 
@@ -21,7 +23,9 @@ const Dashboard = () => {
       <h1>This is dashboard component. Im here cause im authenticated!</h1>
       <h2>Test your counter app!</h2>
 
-      <Container my="md">
+      <WordleContainer  />
+
+      {/* <Container my="md">
         <Grid columns={5}>
           <Grid.Col span={columnSpan}>{child}</Grid.Col>
           <Grid.Col span={columnSpan}>{child}</Grid.Col>
@@ -31,7 +35,7 @@ const Dashboard = () => {
           <Grid.Col span={columnSpan}>{child}</Grid.Col>
           <Grid.Col span={columnSpan}>{child}</Grid.Col>
         </Grid>
-      </Container>
+      </Container> */}
 
       {/* <Center className="flex flex-col">
         <Title order={1} className="text-[100px]">
